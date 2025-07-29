@@ -1,5 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import './App.css';
+import Boat from './Boat';
+import FishJump from './FishJump';
+import useBirds from './hooks/useBirds';
+import Bird from './components/Bird';
 
 // ──────────────────────────────── CONFIG ────────────────────────────────
 const bgUrl      = process.env.PUBLIC_URL + '/Backgroundlevel1HD.png';
@@ -17,9 +21,15 @@ const MISS_DELAY       = 2000;   // ms
 const SUCCESS_DELAY    = 1000;   // ms
 const RETURN_TIME      = 600;    // ms – tune as you like
 
-// Player anchors
-const positionA = { x: 113, y: 52 };  // Player‑1 hand
-const positionB = { x: 986, y: 71 };  // Player‑2 hand
+// Player anchors (viewport-relative)
+const getPositionA = () => ({
+  x: window.innerWidth * 0.0938,
+  y: window.innerHeight * 0.08
+});  // Player‑1 hand
+const getPositionB = () => ({
+  x: window.innerWidth * 0.8305,
+  y: window.innerHeight * 0.08
+});  // Player‑2 hand
 
 // Vertical offsets
 const HIGH_OFFSET = 100;
@@ -44,8 +54,8 @@ export default function App() {
   const artikRef   = useRef(null);
   const beachRef   = useRef(null);
   const frisbeeAnimRef = useRef(null);
-  const flightStartRef  = useRef(positionA);
-  const flightEndRef    = useRef(positionB);
+  const flightStartRef  = useRef(getPositionA());
+  const flightEndRef    = useRef(getPositionB());
   const flightArcDirRef = useRef(1);
   const flightArcAmpRef = useRef(ARC_HEIGHT_RANGE[0]);
 
@@ -95,6 +105,7 @@ export default function App() {
   const [highlightCounter, setHighlightCounter] = useState(false);
   const [allowBeachResume, setAllowBeachResume] = useState(true);
   const [stickToCatcher,   setStickToCatcher]   = useState(false);
+  const [successMessage,   setSuccessMessage]   = useState('');
 
   // Add swish filenames (update with your actual .mp3 filenames)
   const swishList = [
@@ -107,9 +118,10 @@ export default function App() {
     "Swooshes, Whoosh, Organic, Wind, Soft, Normal, Debris SND55381.mp3"
   ];
   const swishAudioRef = useRef(null);
-
+  
   // Add bird sfx refs
   const birdSfxRef = useRef(null);
+  window.birdSfxRef = birdSfxRef;
 
   // Catch SFX
   const catchSfxRef = useRef(null);
@@ -221,7 +233,7 @@ export default function App() {
   }
 
   // ───────────────────────── helpers ─────────────────────────
-  const getAnchor = (pl) => (pl === 1 ? positionA : positionB);
+  const getAnchor = (pl) => (pl === 1 ? getPositionA() : getPositionB());
   const getHighY  = (pl) => getAnchor(pl).y + HIGH_OFFSET;
   const getLowY   = (pl) => getAnchor(pl).y + LOW_OFFSET;
 
@@ -318,8 +330,8 @@ export default function App() {
     setCatchEnabled(false);
     setThrowCount(0);
     setCatchStreak(0);
-    flightStartRef.current = positionA;
-    flightEndRef.current   = positionB;
+    flightStartRef.current = getPositionA();
+    flightEndRef.current   = getPositionB();
     playLoop(beachRef, 0.4);
     playAnimation(1, 'start', 2000);
     playAnimation(2, 'start', 2000);
@@ -502,6 +514,12 @@ export default function App() {
         const success = mapping[throwChoiceRef.current] === finalCatch;
         // (SFX now played in animation loop at catch moment)
         setResult(success ? 'success' : 'fail');
+        
+        // Set random success message if successful
+        if (success) {
+          const messages = ['Good catch!', 'Nice!', 'Wa wa wi wa!', 'Salamtak!', 'Sweet!'];
+          setSuccessMessage(messages[Math.floor(Math.random() * messages.length)]);
+        }
         setPhase('result');
         setStickToCatcher(false);
 
@@ -642,6 +660,29 @@ export default function App() {
     }
   };
 
+  // ───────────────────────── scroll prevention ─────────────────────────
+  useEffect(() => {
+    // Prevent scrolling
+    const preventScroll = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
+    
+    document.addEventListener('wheel', preventScroll, { passive: false });
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown' || e.key === 'Home' || e.key === 'End') {
+        e.preventDefault();
+      }
+    });
+    
+    return () => {
+      document.removeEventListener('wheel', preventScroll);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
+
   // ───────────────────────── cleanup ─────────────────────────
   useEffect(() => () => {
     frisbeeAnimRef.current && cancelAnimationFrame(frisbeeAnimRef.current);
@@ -709,84 +750,195 @@ export default function App() {
     return () => clearInterval(interval);
   }, [gameStarted, windStrength]);
 
-  // Bird animation state (cycle through bird1, bird2, bird3, bird4 every 20s, each bird takes 12s to cross)
-  const birdFrameArrays = [
-    Array.from({length: 9}, (_, i) => `/birds/bird1/bird1_0${i+1}.png`),
-    Array.from({length: 9}, (_, i) => `/birds/bird2/bird2_0${i+1}.png`),
-    Array.from({length: 9}, (_, i) => `/birds/bird3/bird3_0${i+1}.png`),
-    Array.from({length: 9}, (_, i) => `/birds/bird4/bird4_0${i+1}.png`)
-  ];
-  const [birdSet, setBirdSet] = useState(0); // which bird (0-3)
-  const [birdFrame, setBirdFrame] = useState(0);
-  const [birdX, setBirdX] = useState(-100); // start offscreen left
-  const [birdY, setBirdY] = useState(200); // vertical position
-  const [birdActive, setBirdActive] = useState(false);
+  // Bird animation state (cycle through bird1-6 every 20s, each bird takes 12s to cross)
+  // Bird system using useBirds hook
+  const birds = useBirds(gameStarted);
+
+
+  // Boat animation useEffect (proper implementation)
   useEffect(() => {
     if (!gameStarted) return;
-    let frameIntv, moveIntv, birdTimer, sfxTimeout, sfxTimeout2;
-    let screenW = window.innerWidth;
-    let duration = 12000; // 12 seconds
-    let speed = (screenW + 100 + 45) / (duration / 16); // px per 16ms
-    let currentBird = 0;
-    function launchBird() {
-      setBirdSet(currentBird);
-      setBirdX(-100);
-      setBirdY(200 + Math.random() * 200);
-      setBirdActive(true);
-      setBirdFrame(0);
-      let localX = -100;
-      // Play sfx for this bird
-      if (birdSfxRef.current) {
-        birdSfxRef.current.src = `/birds/sfx/bird${currentBird+1}.mp3`;
-        birdSfxRef.current.currentTime = 0;
-        birdSfxRef.current.volume = 1.0;
-        birdSfxRef.current.play().catch(() => {});
-        // For bird 2, play again after 5s
-        if (currentBird === 1) {
-          clearTimeout(sfxTimeout2);
-          sfxTimeout2 = setTimeout(() => {
-            birdSfxRef.current.src = `/birds/sfx/bird2.mp3`;
-            birdSfxRef.current.currentTime = 0;
-            birdSfxRef.current.volume = 1.0;
-            birdSfxRef.current.play().catch(() => {});
-          }, 5000);
-        }
-        // Stop after 12s if not ended
-        clearTimeout(sfxTimeout);
-        sfxTimeout = setTimeout(() => {
-          if (!birdSfxRef.current.paused) birdSfxRef.current.pause();
-        }, 12000);
-      }
-      frameIntv = setInterval(() => {
-        setBirdFrame(f => (f + 1) % 9);
-      }, 100); // 10 fps
-      moveIntv = setInterval(() => {
-        localX += speed;
-        setBirdX(localX);
-        if (localX > screenW + 45) {
-          setBirdActive(false);
-          clearInterval(frameIntv);
-          clearInterval(moveIntv);
-        }
-      }, 16);
-      // Schedule next bird in 20s
-      birdTimer = setTimeout(() => {
-        currentBird = (currentBird + 1) % 4;
-        launchBird();
-      }, 20000);
-    }
-    launchBird();
+    
+    // Boat spawning logic
+    const spawnTick = setInterval(() => {
+      const now = Date.now();
+      
+      BOAT_TYPES.forEach(def => {
+        const { id, startDelay } = def;
+        
+        // Skip until startDelay has passed
+        if (now < startDelay + boatLaunchTime.current) return;
+        
+        // Skip if already on screen
+        if (activeBoatRef.current[id]) return;
+        
+        // Skip if last spawn < 60 seconds ago
+        if (lastBoatSpawnRef.current[id] && now - lastBoatSpawnRef.current[id] < 60000) return;
+        
+        // Create the boat
+        const phase = Math.random() * Math.PI * 2;
+        setBoats(b => [
+          ...b,
+          {
+            key: `${id}-${now}`,
+            id,
+            phase,
+            yBase: def.yOffset,
+            ...def,
+            x: def.dir === 1 ? -160 : window.innerWidth + 160,
+            frame: 1
+          }
+        ]);
+        console.log('[boat spawn]', id);
+        lastBoatSpawnRef.current[id] = now;
+        activeBoatRef.current[id] = true;
+      });
+    }, 1000);
+    
+    // Boat movement and animation
+    let raf;
+    const step = () => {
+      boatFrameRef.current += 1;
+      setBoats(prev =>
+        prev
+          .map(b => {
+            const t = (boatFrameRef.current / 60) + b.phase;
+            const newX = b.x + b.speed * (b.dir === 1 ? 1 : -1) * 16;
+            const out = b.dir === 1 ? newX > window.innerWidth + 160
+                                   : newX < -160;
+            
+            if (out) {
+              console.log('[boat exit]', b.id);
+              activeBoatRef.current[b.id] = false;
+            }
+            
+            return {
+              ...b,
+              x: newX,
+              y: b.yBase + Math.sin(t * 2) * b.bobAmp,
+              rot: Math.sin(t * 1.3) * 4,
+              frame: ((Math.floor(t * 6) % 9) || 9)
+            };
+          })
+          .filter(b => !(b.dir === 1 ? b.x > window.innerWidth + 160
+                                        : b.x < -160))
+      );
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    
     return () => {
-      clearInterval(frameIntv);
-      clearInterval(moveIntv);
-      clearTimeout(birdTimer);
-      clearTimeout(sfxTimeout);
-      clearTimeout(sfxTimeout2);
-      if (birdSfxRef.current) birdSfxRef.current.pause();
+      clearInterval(spawnTick);
+      cancelAnimationFrame(raf);
     };
   }, [gameStarted]);
-  const frameX = birdFrame % 3;
-  const frameY = Math.floor(birdFrame / 3);
+
+  // Fish zone definition (moved before useEffects that use it)
+  const [fishZone] = useState({
+    left: 0,
+    top: 286,
+    width: 1200,
+    height: 145,
+  });
+  const [fishJumps, setFishJumps] = useState([]);
+
+  // Bird zone definition
+  const [birdZone] = useState({
+    left: 0,
+    bottom: 270,
+    width: 1200,
+    height: 260,
+  });
+
+  // Improved fish spawning system (based on reference)
+  useEffect(() => {
+    if (!gameStarted) return;
+    let running = true;
+    
+    function spawnFish() {
+      if (!running) return;
+      
+      // Random chance for burst spawning (20% chance)
+      if (Math.random() < 0.2) {
+        // Spawn 2-5 fish in quick succession
+        const burstCount = Math.floor(Math.random() * 4) + 2;
+        for (let i = 0; i < burstCount; i++) {
+          setTimeout(() => {
+            if (!running) return;
+            const x = fishZone.left + Math.random() * (fishZone.width - 120);
+            const y = fishZone.top + Math.random() * (fishZone.height - 80);
+            const relY = (y - fishZone.top) / (fishZone.height - 80);
+            const scale = 0.3 + 0.9 * relY;
+            const types = ['fish1', 'fish2', 'fish3', 'fish4'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const direction = Math.random() < 0.5 ? 1 : -1;
+            const id = Math.random().toString(36).slice(2);
+            setFishJumps(fj => [...fj, { x, y, scale, type, id, direction }]);
+          }, i * 300); // 300ms apart in burst
+        }
+        setTimeout(spawnFish, 2000 + Math.random() * 3000); // Longer pause after burst
+      } else {
+        // Single fish spawn
+        const x = fishZone.left + Math.random() * (fishZone.width - 120);
+        const y = fishZone.top + Math.random() * (fishZone.height - 80);
+        const relY = (y - fishZone.top) / (fishZone.height - 80);
+        const scale = 0.3 + 0.9 * relY;
+        const types = ['fish1', 'fish2', 'fish3', 'fish4'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        const direction = Math.random() < 0.5 ? 1 : -1;
+        const id = Math.random().toString(36).slice(2);
+        setFishJumps(fj => [...fj, { x, y, scale, type, id, direction }]);
+        setTimeout(spawnFish, 800 + Math.random() * 2000); // Quick single spawns: 0.8-2.8 seconds
+      }
+    }
+    spawnFish();
+    return () => { running = false; };
+  }, [gameStarted, fishZone]);
+
+  // Fish frenzy function (for testing)
+  useEffect(() => {
+    window.triggerFishFrenzy = () => {
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const x = fishZone.left + Math.random() * (fishZone.width - 120);
+          const y = fishZone.top + Math.random() * (fishZone.height - 80);
+          const relY = (y - fishZone.top) / (fishZone.height - 80);
+          const scale = 0.3 + 0.9 * relY;
+          const types = ['fish1', 'fish2', 'fish3', 'fish4'];
+          const type = types[Math.floor(Math.random() * types.length)];
+          const direction = Math.random() < 0.5 ? 1 : -1; // Random direction
+          const id = Math.random().toString(36).slice(2);
+          setFishJumps(fj => [...fj, { x, y, scale, type, id, direction }]);
+        }, Math.random() * 5000);
+      }
+    };
+    return () => { window.triggerFishFrenzy = undefined; };
+  }, [fishZone]);
+
+  const handleFishDone = useCallback(
+    id => setFishJumps(list => list.filter(f => f.id !== id)),
+    []
+  );
+
+  // Add a function to trigger both frenzies for manual testing
+  function triggerFrenzy() {
+    if (window.triggerFishFrenzy) window.triggerFishFrenzy();
+    if (window.triggerBirdFrenzy) window.triggerBirdFrenzy();
+  }
+
+
+
+  // Boat animation state (proper implementation based on reference)
+  const BOAT_TYPES = [
+    { id: 'boat1', dir: 1, folder: 'boat1', bobAmp: 3, scale: 0.612, speed: 0.01, yOffset: 27, startDelay: 0 },
+    { id: 'boat2', dir: -1, folder: 'boat2', bobAmp: 6, scale: 0.51, speed: 0.01, yOffset: 86, startDelay: 20000 },
+    { id: 'boat3', dir: 1, folder: 'boat3', bobAmp: 3, scale: 0.85, speed: 0.01, yOffset: 55, startDelay: 40000 }
+  ];
+  const [boats, setBoats] = useState([]);
+  const boatFrameRef = useRef(0);
+  const lastBoatSpawnRef = useRef({});
+  const activeBoatRef = useRef({});
+  const boatLaunchTime = useRef(Date.now());
 
   // ───────────────────────── frisbee style ─────────────────────────
   const getFrisbeeStyle = () => {
@@ -807,7 +959,7 @@ export default function App() {
       position: 'absolute',
       left: x,
       bottom: y,
-      width: 90,
+      width: 76.5,
       height: 'auto',
       imageRendering: 'pixelated',
       zIndex: 20,
@@ -843,9 +995,11 @@ export default function App() {
     <div
       className="App"
       style={{
-        minHeight: '100vh',
-        minWidth: '100vw',
-        position: 'relative',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
         overflow: 'hidden',
         filter: specialScene ? `hue-rotate(${bgHue}deg)` : 'none',
       }}
@@ -879,7 +1033,7 @@ export default function App() {
       <audio ref={throwSfxRef} />
 
       {gameStarted && (
-        <div className="game-area absolute-game-area">
+        <div className="absolute-game-area">
           {/* Wind Compass UI (arrow only, no flag, no S) */}
           <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 100, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 2 }}>
@@ -902,6 +1056,45 @@ export default function App() {
               <span style={{ fontSize: 10, color: '#aaa', marginLeft: 2, verticalAlign: 'middle' }}>km/h</span>
             </div>
           </div>
+          
+          {/* Special Event Button */}
+          <button 
+            onClick={() => {
+              console.log('FRENZY button clicked!');
+              triggerFrenzy();
+            }}
+            style={{
+              position: 'absolute',
+              top: 110,
+              left: 18,
+              zIndex: 1000,
+              background: 'linear-gradient(#ff6b6b, #ee5a52)',
+              color: '#fff',
+              border: '2px solid #333',
+              borderRadius: 8,
+              padding: '8px 12px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px #0006',
+              transition: 'transform 0.1s, box-shadow 0.1s',
+              pointerEvents: 'auto'
+            }}
+            onMouseDown={(e) => {
+              e.target.style.transform = 'translateY(1px)';
+              e.target.style.boxShadow = '0 1px 2px #0006';
+            }}
+            onMouseUp={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 4px #0006';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 4px #0006';
+            }}
+          >
+            🌪️ FRENZY
+          </button>
           {/* Catch Streak Counter */}
           <div className="streak-panel">
             <div className="retro-panel">
@@ -949,23 +1142,30 @@ export default function App() {
             style={getFrisbeeShadowStyle()}
           />
 
-          {/* Animated Bird (cycle through 4 birds, 9 frames each) */}
-          {birdActive && (
-            <img
-              src={birdFrameArrays[birdSet][birdFrame]}
-              alt="Bird"
-              style={{
-                position: 'absolute',
-                left: birdX,
-                bottom: birdY,
-                width: 45,
-                height: 45,
-                imageRendering: 'pixelated',
-                zIndex: 10,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
+          {/* Birds using new system */}
+          {birds.map(b => <Bird key={b.id} bird={b} />)}
+
+          {/* Animated Boats with proper physics */}
+          {boats.map(boat => (
+            <Boat key={boat.key} boat={boat} />
+          ))}
+
+
+
+          
+
+      {/* Fish jumps with proper animation */}
+      {fishJumps.map(fj => (
+        <FishJump
+          key={fj.id}
+          x={fj.x}
+          y={fj.y}
+          scale={fj.scale}
+          type={fj.type}
+          direction={fj.direction}
+          onDone={() => handleFishDone(fj.id)}
+        />
+      ))}
 
           {/* Artik (halo Artik man) during special scene, animated frames from ARTIKanimations/runright */}
           {specialScene && (
@@ -1038,8 +1238,8 @@ export default function App() {
         <div className="menu-content overlay-menu">
           {phase === 'throw' && !waiting && (
             <>
-              <div className="retro-panel">Player {thrower}: Choose your throw</div>
-              <div className="throw-buttons">
+      
+              <div className="throw-buttons" style={{marginTop: '50px'}}>
                 <button className="game-btn high" onClick={() => handleThrow('high')}>High (↑)</button>
                 <button className="game-btn mid" onClick={() => handleThrow('mid')}>Middle (→)</button>
                 <button className="game-btn low" onClick={() => handleThrow('low')}>Low (↓)</button>
@@ -1049,11 +1249,9 @@ export default function App() {
 
           {phase === 'flight' && (
             <>
-              <div className="retro-panel blink">🥏 Frisbee in flight…</div>
-              <p>
-                Player {thrower === 1 ? 2 : 1}: Choose your catch (↑ → ↓) before it arrives!
-              </p>
-              <div className="catch-buttons">
+      
+
+              <div className="catch-buttons" style={{marginTop: '50px'}}>
                 <button className="game-btn high" onClick={() => handleCatch('up')} disabled={!catchEnabled || !!catchChoice}>
                   Up (↑)
                 </button>
@@ -1064,7 +1262,7 @@ export default function App() {
                   Down (↓)
                 </button>
               </div>
-              {!catchChoice && <p>Waiting for your choice…</p>}
+
             </>
           )}
 
@@ -1072,16 +1270,15 @@ export default function App() {
             <>
               {result === 'success' ? (
                 <div className="retro-panel" style={{fontSize: '2em', color: '#7fff00'}}>
-                  🏆 Caught!
+                  🏆 {successMessage}
                 </div>
               ) : (
                 <div className="retro-panel blink" style={{fontSize: '2em', color: '#ff4444'}}>
                   💥 Missed!
                 </div>
               )}
-              {result === 'fail'   && <p>Player {thrower === 1 ? 2 : 1} missed.</p>}
-              {result === 'success' && <p>Player {thrower === 1 ? 2 : 1} caught the frisbee!</p>}
-              <p>Next round starting…</p>
+
+              
             </>
           )}
         </div>

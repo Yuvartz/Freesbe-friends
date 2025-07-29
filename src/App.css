@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 600px;
+  height: 100vh;
   pointer-events: none;
   z-index: 1;
 }
@@ -164,7 +164,7 @@ img, .App, .arrow-btn svg {
   position: absolute;
   left: 60px;
   bottom: 18px;
-  width: 110px;
+  width: 93.5px;
   height: auto;
   image-rendering: pixelated;
   z-index: 20;
@@ -172,8 +172,8 @@ img, .App, .arrow-btn svg {
 .player2-abs {
   position: absolute;
   right: 60px;
-  bottom: 33px;
-  width: 110px;
+  bottom: 23px;
+  width: 93.5px;
   height: auto;
   image-rendering: pixelated;
   z-index: 20;
@@ -249,8 +249,8 @@ img, .App, .arrow-btn svg {
 
 .game-btn{
   font-family:'Press Start 2P',monospace;
-  font-size:14px;
-  padding:12px 18px;
+  font-size:11.2px;
+  padding:9.6px 14.4px;
   margin:6px;
   border:2px solid #333;
   border-radius:6px;
@@ -267,7 +267,7 @@ img, .App, .arrow-btn svg {
   box-shadow:none;
 }
 .game-btn.high{background:linear-gradient(#3ff,#0cc);color:#013;}
-.game-btn.mid {background:linear-gradient(#ffeb3b,#d4af37);color:#402600;}
+.game-btn.mid {background:linear-gradient(#ffeb3b,#d4af37);color:#402600;font-size:10.1px;padding:8.6px 13px;}
 .game-btn.low {background:linear-gradient(#ff55ff,#d600d6);color:#301033;}
 .game-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
 
