@@ -1021,6 +1021,50 @@ export default function App() {
           pointerEvents: 'none'
         }}
       />
+      
+      {/* Background Layers */}
+      <img
+        src={process.env.PUBLIC_URL + '/BGLAYERS/backhills.png'}
+        alt="Back Hills"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          objectFit: 'cover',
+          zIndex: 1,
+          pointerEvents: 'none'
+        }}
+      />
+      <img
+        src={process.env.PUBLIC_URL + '/BGLAYERS/island.png'}
+        alt="Island"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          objectFit: 'cover',
+          zIndex: 2,
+          pointerEvents: 'none'
+        }}
+      />
+      <img
+        src={process.env.PUBLIC_URL + '/BGLAYERS/fronttrees.png'}
+        alt="Front Trees"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          objectFit: 'cover',
+          zIndex: 25,
+          pointerEvents: 'none'
+        }}
+      />
       <audio ref={audioRef} src={musicUrl} loop />
       <audio ref={birdsRef} src={birdsUrl} loop />
       <audio ref={swooshRef} src={swooshUrl} />
@@ -1035,7 +1079,7 @@ export default function App() {
       {gameStarted && (
         <div className="absolute-game-area">
           {/* Wind Compass UI (arrow only, no flag, no S) */}
-          <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 100, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 1000, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 2 }}>
               {/* Compass circle */}
               <svg width="48" height="48" style={{ position: 'absolute', top: 0, left: 0 }}>
@@ -1067,7 +1111,7 @@ export default function App() {
               position: 'absolute',
               top: 110,
               left: 18,
-              zIndex: 1000,
+              zIndex: 1001,
               background: 'linear-gradient(#ff6b6b, #ee5a52)',
               color: '#fff',
               border: '2px solid #333',
