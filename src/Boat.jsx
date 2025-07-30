@@ -9,7 +9,7 @@ export default function Boat({ boat }) {
     height = 70;
     extraYOffset = 30 + 151 + 49 - 15 - 8 + 6;
   } else if (folder === 'boat2') {
-    imgFile = `boat2_${frame}.png`;
+    imgFile = `Boat2_${frame}.png`;
     width = 60;
     height = 60;
     extraYOffset = (yOffset || 0) + 49 - 45;
