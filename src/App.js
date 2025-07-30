@@ -1159,31 +1159,7 @@ export default function App() {
           
           <div className="absolute-game-area">
           
-          {/* Small Birds Zone Visualization */}
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 290,
-            width: '100vw',
-            height: 260,
-            border: '2px solid red',
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            zIndex: 30,
-            pointerEvents: 'none'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              color: 'red',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              textShadow: '1px 1px 2px white'
-            }}>
-              Small Birds Zone (yRange: 210-470)
-            </div>
-          </div>
+
 
           {/* Player 1 */}
           <img
