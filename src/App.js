@@ -1079,7 +1079,7 @@ export default function App() {
       {gameStarted && (
         <>
           {/* Wind Compass UI (arrow only, no flag, no S) */}
-          <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 9999, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'fixed', top: 18, left: 18, zIndex: 99999, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 2 }}>
               {/* Compass circle */}
               <svg width="48" height="48" style={{ position: 'absolute', top: 0, left: 0 }}>
@@ -1108,10 +1108,10 @@ export default function App() {
               triggerFrenzy();
             }}
             style={{
-              position: 'absolute',
+              position: 'fixed',
               top: 110,
               left: 18,
-              zIndex: 10000,
+              zIndex: 100000,
               background: 'linear-gradient(#ff6b6b, #ee5a52)',
               color: '#fff',
               border: '2px solid #333',
