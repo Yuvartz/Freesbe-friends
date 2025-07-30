@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/Freesbe-friends/static/css/main.6af73355.css",
-    "main.js": "/Freesbe-friends/static/js/main.84cc5fed.js",
+    "main.js": "/Freesbe-friends/static/js/main.cb7e7c35.js",
     "static/js/453.789316a8.chunk.js": "/Freesbe-friends/static/js/453.789316a8.chunk.js",
     "index.html": "/Freesbe-friends/index.html",
     "main.6af73355.css.map": "/Freesbe-friends/static/css/main.6af73355.css.map",
-    "main.84cc5fed.js.map": "/Freesbe-friends/static/js/main.84cc5fed.js.map",
+    "main.cb7e7c35.js.map": "/Freesbe-friends/static/js/main.cb7e7c35.js.map",
     "453.789316a8.chunk.js.map": "/Freesbe-friends/static/js/453.789316a8.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.6af73355.css",
-    "static/js/main.84cc5fed.js"
+    "static/js/main.cb7e7c35.js"
   ]
 }
