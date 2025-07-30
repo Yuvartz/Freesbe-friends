@@ -836,7 +836,7 @@ export default function App() {
   // Fish zone definition (moved before useEffects that use it)
   const [fishZone] = useState({
     left: 0,
-    top: 286,
+    top: 346,
     width: 1200,
     height: 145,
   });
@@ -930,9 +930,9 @@ export default function App() {
 
   // Boat animation state (proper implementation based on reference)
   const BOAT_TYPES = [
-    { id: 'boat1', dir: 1, folder: 'boat1', bobAmp: 3, scale: 0.612, speed: 0.01, yOffset: 27, startDelay: 0 },
-    { id: 'boat2', dir: -1, folder: 'boat2', bobAmp: 6, scale: 0.51, speed: 0.01, yOffset: 86, startDelay: 20000 },
-    { id: 'boat3', dir: 1, folder: 'boat3', bobAmp: 3, scale: 0.85, speed: 0.01, yOffset: 55, startDelay: 40000 }
+    { id: 'boat1', dir: 1, folder: 'boat1', bobAmp: 3, scale: 0.612, speed: 0.01, yOffset: 47, startDelay: 0 },
+    { id: 'boat2', dir: -1, folder: 'boat2', bobAmp: 6, scale: 0.51, speed: 0.01, yOffset: 106, startDelay: 20000 },
+    { id: 'boat3', dir: 1, folder: 'boat3', bobAmp: 3, scale: 0.85, speed: 0.01, yOffset: 75, startDelay: 40000 }
   ];
   const [boats, setBoats] = useState([]);
   const boatFrameRef = useRef(0);

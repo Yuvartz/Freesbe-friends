@@ -15,7 +15,7 @@ const BIRD_CONFIG = {
   scaleRange: [0.6, 1.0],
   ampRange: [12, 30],   // wave amplitude px
   freqRange: [0.5, 1.0], // wave frequency factor
-  yRange: [260, 520]    // spawn altitude px (bottom value)
+  yRange: [200, 460]    // spawn altitude px (bottom value)
 };
 
 // Small bird configuration (1/20 size)
@@ -31,7 +31,7 @@ const SMALL_BIRD_CONFIG = {
   scaleRange: [0.05, 0.08], // Much smaller
   ampRange: [2, 6],     // smaller wave amplitude
   freqRange: [0.8, 1.2], // slightly different frequency
-  yRange: [270, 510]    // same zone as regular birds
+  yRange: [210, 470]    // same zone as regular birds
 };
 
 function rand(min, max) { return min + Math.random() * (max - min); }
