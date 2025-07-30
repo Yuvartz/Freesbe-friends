@@ -3,7 +3,8 @@ import './App.css';
 import Boat from './Boat';
 import FishJump from './FishJump';
 import useBirds from './hooks/useBirds';
-import Bird from './components/Bird';
+import BigBird from './components/Bird';
+import SmallBird from './components/SmallBird';
 
 // ──────────────────────────────── CONFIG ────────────────────────────────
 const bgUrl      = process.env.PUBLIC_URL + '/Backgroundlevel1HD.png';
@@ -930,7 +931,7 @@ export default function App() {
 
   // Boat animation state (proper implementation based on reference)
   const BOAT_TYPES = [
-    { id: 'boat1', dir: 1, folder: 'boat1', bobAmp: 3, scale: 0.612, speed: 0.01, yOffset: 47, startDelay: 0 },
+    { id: 'boat1', dir: 1, folder: 'boat1', bobAmp: 3, scale: 0.612, speed: 0.01, yOffset: 37, startDelay: 0 },
     { id: 'boat2', dir: -1, folder: 'boat2', bobAmp: 6, scale: 0.51, speed: 0.01, yOffset: 106, startDelay: 20000 },
     { id: 'boat3', dir: 1, folder: 'boat3', bobAmp: 3, scale: 0.85, speed: 0.01, yOffset: 75, startDelay: 40000 }
   ];
@@ -1033,7 +1034,7 @@ export default function App() {
           width: '100vw',
           height: '100vh',
           objectFit: 'cover',
-          zIndex: 1,
+          zIndex: 3,
           pointerEvents: 'none'
         }}
       />
@@ -1075,6 +1076,9 @@ export default function App() {
       <audio ref={birdSfxRef} />
       <audio ref={catchSfxRef} />
       <audio ref={throwSfxRef} />
+
+      {/* Big Birds - Outside game area for proper z-index */}
+      {gameStarted && birds.filter(b => !b.id.toString().startsWith('small-')).map(b => <BigBird key={b.id} bird={b} />)}
 
       {gameStarted && (
         <>
@@ -1141,29 +1145,45 @@ export default function App() {
           </button>
           
           {/* Catch Streak Counter */}
-          <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 99998, background: 'rgba(0, 0, 0, 0.7)', color: '#fff', padding: '10px 20px', borderRadius: '20px', fontSize: '1.2rem', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)', border: '2px solid #ffb347', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}>
-            <div style={{ letterSpacing: '1px' }}>
-              Catch Streak: {catchStreak}
-              <div style={{ display: 'flex', gap: '4px', marginTop: '8px', justifyContent: 'center' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      backgroundColor: catchStreak > i ? '#7fff00' : '#333',
-                      border: '1px solid #666',
-                      borderRadius: '2px',
-                      transition: 'background-color 0.3s',
-                      animation: catchStreak === 5 ? 'streakCelebrate 0.5s ease-in-out' : 'none'
-                    }}
-                  />
-                ))}
-              </div>
+          <div className="retro-panel" style={{ position: 'fixed', top: 20, right: 20, zIndex: 99998 }}>
+            <div>Catch Streak: {catchStreak}</div>
+            <div className="streak-bar">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`streak-segment ${catchStreak > i ? 'filled' : ''} ${catchStreak === 5 ? 'celebrate' : ''}`}
+                />
+              ))}
             </div>
           </div>
           
           <div className="absolute-game-area">
+          
+          {/* Small Birds Zone Visualization */}
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 290,
+            width: '100vw',
+            height: 260,
+            border: '2px solid red',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            zIndex: 30,
+            pointerEvents: 'none'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: 'red',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              textShadow: '1px 1px 2px white'
+            }}>
+              Small Birds Zone (yRange: 210-470)
+            </div>
+          </div>
 
           {/* Player 1 */}
           <img
@@ -1193,8 +1213,8 @@ export default function App() {
             style={getFrisbeeShadowStyle()}
           />
 
-          {/* Birds using new system */}
-          {birds.map(b => <Bird key={b.id} bird={b} />)}
+          {/* Small Birds */}
+          {birds.filter(b => b.id.toString().startsWith('small-')).map(b => <SmallBird key={b.id} bird={b} />)}
 
           {/* Animated Boats with proper physics */}
           {boats.map(boat => (

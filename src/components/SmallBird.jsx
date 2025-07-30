@@ -1,24 +1,22 @@
-// Big bird configuration
-const BIG_BIRD_CONFIG = {
+// Small bird configuration
+const SMALL_BIRD_CONFIG = {
   sets: [
     { sheet: '/birds/bird1/bird1_', frames: 9 },
     { sheet: '/birds/bird2/bird2_', frames: 9 },
     { sheet: '/birds/bird3/bird3_', frames: 9 },
     { sheet: '/birds/bird4/bird4_', frames: 9 },
-    { sheet: '/birds/bird5/bird5_', frames: 9 },
-    { sheet: '/birds/bird6/bird6_', frames: 9 },
   ],
 };
 
-export default function BigBird({ bird }) {
-  const setInfo = BIG_BIRD_CONFIG.sets[bird.set];
+export default function SmallBird({ bird }) {
+  const setInfo = SMALL_BIRD_CONFIG.sets[bird.set];
   const idx = String(bird.frame + 1).padStart(2, '0');
   const src = process.env.PUBLIC_URL + `${setInfo.sheet}${idx}.png`;
 
   return (
     <img
       src={src}
-      alt="big bird"
+      alt="small bird"
       style={{
         position: 'absolute',
         left: bird.x,
@@ -28,7 +26,7 @@ export default function BigBird({ bird }) {
         transform: `scaleX(${bird.dir}) rotate(${bird.rot}deg)`,
         imageRendering: 'pixelated',
         pointerEvents: 'none',
-        zIndex: 15  // In front of backhills
+        zIndex: 0  // Behind backhills
       }}
     />
   );

@@ -31,7 +31,7 @@ const SMALL_BIRD_CONFIG = {
   scaleRange: [0.05, 0.08], // Much smaller
   ampRange: [2, 6],     // smaller wave amplitude
   freqRange: [0.8, 1.2], // slightly different frequency
-  yRange: [210, 470]    // same zone as regular birds
+  yRange: [290, 550]    // same zone as regular birds
 };
 
 function rand(min, max) { return min + Math.random() * (max - min); }
