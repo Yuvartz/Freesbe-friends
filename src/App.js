@@ -28,7 +28,7 @@ const getPositionA = () => ({
   y: window.innerHeight * 0.08
 });  // Player‑1 hand
 const getPositionB = () => ({
-  x: window.innerWidth * 0.8305,
+  x: window.innerWidth * 0.8105,
   y: window.innerHeight * 0.08
 });  // Player‑2 hand
 
