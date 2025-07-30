@@ -1077,7 +1077,7 @@ export default function App() {
       <audio ref={throwSfxRef} />
 
       {gameStarted && (
-        <div className="absolute-game-area">
+        <>
           {/* Wind Compass UI (arrow only, no flag, no S) */}
           <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 9999, background: 'rgba(30,30,40,0.85)', borderRadius: 16, border: '2px solid #444', padding: 10, boxShadow: '0 2px 8px #0006', width: 80, height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 2 }}>
@@ -1139,6 +1139,8 @@ export default function App() {
           >
             🌪️ FRENZY
           </button>
+          
+          <div className="absolute-game-area">
           {/* Catch Streak Counter */}
           <div className="streak-panel">
             <div className="retro-panel">
@@ -1230,6 +1232,7 @@ export default function App() {
             />
           )}
         </div>
+        </>
       )}
 
       {/* ─────── Menus ─────── */}
