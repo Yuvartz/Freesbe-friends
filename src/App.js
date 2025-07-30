@@ -1140,25 +1140,30 @@ export default function App() {
             🌪️ FRENZY
           </button>
           
-          <div className="absolute-game-area">
           {/* Catch Streak Counter */}
-          <div className="streak-panel">
-            <div className="retro-panel">
+          <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 99998, background: 'rgba(0, 0, 0, 0.7)', color: '#fff', padding: '10px 20px', borderRadius: '20px', fontSize: '1.2rem', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)', border: '2px solid #ffb347', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}>
+            <div style={{ letterSpacing: '1px' }}>
               Catch Streak: {catchStreak}
-              <div className="streak-bar">
+              <div style={{ display: 'flex', gap: '4px', marginTop: '8px', justifyContent: 'center' }}>
                 {[...Array(5)].map((_, i) => (
                   <span
                     key={i}
-                    className={
-                      'streak-segment' +
-                      (catchStreak > i ? ' filled' : '') +
-                      (catchStreak === 5 ? ' celebrate' : '')
-                    }
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: catchStreak > i ? '#7fff00' : '#333',
+                      border: '1px solid #666',
+                      borderRadius: '2px',
+                      transition: 'background-color 0.3s',
+                      animation: catchStreak === 5 ? 'streakCelebrate 0.5s ease-in-out' : 'none'
+                    }}
                   />
                 ))}
               </div>
             </div>
           </div>
+          
+          <div className="absolute-game-area">
 
           {/* Player 1 */}
           <img
